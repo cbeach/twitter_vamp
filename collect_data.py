@@ -59,13 +59,61 @@ class Client:
         FOREIGN KEY (user_id) REFERENCES user(user_id), \
         LONG place, \
         FOREIGN KEY (place_id) REFERENCES place(id),
-        INT hashtag_id, \
-        FOREIGN KEY (hashtag_id) REFERENCES hashtags(tweet_id), \
-        INT mention_id, \
-        FOREIGN KEY (mention_id) REGERENCES mentions(tweet_id), \
         INT url_id, \
-        FOREIGN KEY (url_id) REFERENCES urls(tweet_id), \
+        FOREIGN KEY (url_id) REFERENCES urls(tweet_id) \
         )")
+        
+        self.db_cursor.execute("CREATE TABLE IF NOT EXISTS \
+        tv_users(id LONG PRIMARY KEY user_id, \
+        BIT profile_use_background_image, \
+        BIT contributors_enabled, \
+        BIT verified, \
+        BIT is_translator, \
+        BIT geo_enabled, \
+        BIT protected, \
+        BIT default_profile, \
+        BIT profile_background_title, \
+        BIT show_all _inline_media, \
+        BIT default_profile_image, \
+        INT favorites_count, \
+        INT friends_count, \
+        INT listed_count, \
+        INT utc_offset, \
+        INT statuses_count, \
+        INT followers_count, \
+        VARCHAR(512) profile_image_url_https, \
+        VARCHAR(512) profile_image_url, \
+        VARCHAR(512) profile_background_image_url_https, \
+        VARCHAR(512) profile_background_image_url, \
+        INT profile_sidebar_fill_color, \
+        INT profile_text_color, \
+        INT profile_link_color, \
+        INT profile_background_color, \
+        INT id_str, \
+        INT created_at, \
+        INT time_zone, \
+        INT profile_sidebar_border_color, \
+        VARCHAR(512) screen_name, \
+        VARCHAR(512) name, \
+        VARCHAR(512) url, \
+        VARCHAR(512) description, \
+        VARCHAR(24) lang, \
+        INT location, \
+        FOREIGN KEY (location REFERENCES locations(location_id) \
+        )")  
+        
+        self.db_cursor.execute("CREATE TABLE IF NOT EXISTS \
+        tv_users(id LONG PRIMARY KEY place_id, \
+        VARCHAR(32)name, \
+        VARCHAR(512) url, \
+        VARCHAR(32) country, \
+        VARCHAR(32) place_type, \
+        CHAR(2) country_code, \
+        VARCHAR(70) full_name, \
+        VARBYTE(128) bounding_box, \
+        VARBYTE(1024) attributes \
+        )")
+
 
     def on_receive(self, data):
         self.buffer += data

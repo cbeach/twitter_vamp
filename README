@@ -1,0 +1,35 @@
+Twitter_vamp - Twitter archiving tool
+-------------------------------------------------------------------------------
+Copyright © 2011 Casey Beach
+
+Developed by Casey Beach to be used as a data collection tool for research 
+into nautral language processing, machine learning, and data analysis.
+
+TODO:
+-------------------------------------------------------------------------------
+* Test that database initialization.  Once functioning start collecting data.
+* Write database transfer tool.
+* Begin iterative optimization of database.
+	* Low hanging fruit:
+		* Reduce redundency in data: Optimize using lookup tables for text, and
+									 common prefix lookups for urls etc.
+		
+		* Reduce small tables to flat files
+
+		* Column-wise optimization:  Reduce as much data as possible to single
+									 columns to reduce database overhead.
+
+*Create IRC bot for control.
+
+Release Notes
+-------------------------------------------------------------------------------
+0.01 - collect_data.py will connect with the twitter api useing a hardcoded
+user name and password.  The twitter streaming api is dumped straight to the
+terminal.  The data base initialization is written but not yet tested in any
+way.
+
+
+
+
+
+
