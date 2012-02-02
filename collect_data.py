@@ -16,7 +16,8 @@ class Client:
     searching = ["follow_request_sent", "notifications", "following"]
     
     def __init__(self):
-        
+        self.db_init()
+        self.create_tables()
         
         #Open a connection to the twitter streaming api
         self.buffer = ""
@@ -32,87 +33,88 @@ class Client:
             self.db_con = MySQLdb.connect('localhost', 'twitter_test', 'twittertest', 'twitter_test')
             self.db_cursor = self.db_con.cursor()
             self.create_tables()
-        except _mysql.Error, e:
+        except MySQLdb.Error, e:
             print('Error %d: %s', (e.args[0], e.args[1]))
             sys.exit()
-   
+        
     def create_tables(self):
         self.db_cursor.execute("CREATE TABLE IF NOT EXISTS \
-        tv_tweets(id LONG PRIMARY KEY, \
-        created_at INT, \
-        VARCHAR(150) text, \
-        VARCHAR(512) source, \
-        BIT favorited,\
-        BIT truncated, \
-        BIT retweeted, \
-        INT retweet_count,/
-        INT in_reply_to_user_id, \
-        LONG in_reply_to_status_id, \
-        VARCHAR(512) in_reply_to_screen_name, \
-        LONG in_reply_to_user_id_str, \
-        LONG in_reply_to_id_str, \
-        LONG id_str, \
-        INT geo_type, \
-        FLOAT lat, \
-        FLOAT long, \
-        INT user_id, \
-        FOREIGN KEY (user_id) REFERENCES user(user_id), \
-        LONG place, \
-        FOREIGN KEY (place_id) REFERENCES place(id),
-        INT url_id, \
-        FOREIGN KEY (url_id) REFERENCES urls(tweet_id) \
-        )")
+tv_tweets(tweet_id BIGINT PRIMARY KEY, \
+created_at INT, \
+text VARCHAR(150), \
+source VARCHAR(512), \
+favorited BIT,\
+truncated BIT, \
+retweeted BIT, \
+retweet_count INT, \
+in_reply_to_user_id INT, \
+in_reply_to_status_id LONG, \
+in_reply_to_screen_name VARCHAR(512), \
+in_reply_to_user_id_str LONG, \
+in_reply_to_id_str LONG, \
+id_str LONG, \
+geo_type INT, \
+lat FLOAT, \
+lon FLOAT, \
+user_id INT, \
+FOREIGN KEY (user_id) REFERENCES tv_users(user_id), \
+place_id BIGINT, \
+FOREIGN KEY (place_id) REFERENCES tv_places(place_id) \
+)")
+
+#properties in user_flags bit field--------------------
+#profile_use_background_image BIT, \
+#contributors_enabled BIT, \
+#verified BIT, \
+#is_translator BIT, \
+#geo_enabled BIT, \
+#protected BIT, \
+#default_profile BIT, \
+#profile_background_title BIT, \
+#show_all _inline_media BIT, \
+#default_profile_image BIT, \
+
+
+        self.db_cursor.execute("CREATE TABLE IF NOT EXISTS \
+tv_users(user_id BIGINT PRIMARY KEY, \
+user_flags BIT(10), \
+favorites_count INT, \
+friends_count INT, \
+listed_count INT, \
+utc_offset INT, \
+statuses_count INT, \
+followers_count INT, \
+profile_image_url_https VARCHAR(512), \
+profile_image_url VARCHAR(512), \
+profile_background_image_url_https VARCHAR(512), \
+profile_background_image_url VARCHAR(512), \
+profile_sidebar_fill_color INT, \
+profile_text_color INT, \
+profile_link_color INT, \
+profile_background_color INT, \
+id_str INT, \
+created_at INT, \
+time_zone INT, \
+profile_sidebar_border_color INT, \
+screen_name VARCHAR(512), \
+url VARCHAR(512), \
+description VARCHAR(512), \
+lang VARCHAR(24), \
+place INT, \
+FOREIGN KEY (place) REFERENCES tv_places(place_id) \
+)")  
         
         self.db_cursor.execute("CREATE TABLE IF NOT EXISTS \
-        tv_users(id LONG PRIMARY KEY user_id, \
-        BIT profile_use_background_image, \
-        BIT contributors_enabled, \
-        BIT verified, \
-        BIT is_translator, \
-        BIT geo_enabled, \
-        BIT protected, \
-        BIT default_profile, \
-        BIT profile_background_title, \
-        BIT show_all _inline_media, \
-        BIT default_profile_image, \
-        INT favorites_count, \
-        INT friends_count, \
-        INT listed_count, \
-        INT utc_offset, \
-        INT statuses_count, \
-        INT followers_count, \
-        VARCHAR(512) profile_image_url_https, \
-        VARCHAR(512) profile_image_url, \
-        VARCHAR(512) profile_background_image_url_https, \
-        VARCHAR(512) profile_background_image_url, \
-        INT profile_sidebar_fill_color, \
-        INT profile_text_color, \
-        INT profile_link_color, \
-        INT profile_background_color, \
-        INT id_str, \
-        INT created_at, \
-        INT time_zone, \
-        INT profile_sidebar_border_color, \
-        VARCHAR(512) screen_name, \
-        VARCHAR(512) name, \
-        VARCHAR(512) url, \
-        VARCHAR(512) description, \
-        VARCHAR(24) lang, \
-        INT location, \
-        FOREIGN KEY (location REFERENCES locations(location_id) \
-        )")  
-        
-        self.db_cursor.execute("CREATE TABLE IF NOT EXISTS \
-        tv_users(id LONG PRIMARY KEY place_id, \
-        VARCHAR(32)name, \
-        VARCHAR(512) url, \
-        VARCHAR(32) country, \
-        VARCHAR(32) place_type, \
-        CHAR(2) country_code, \
-        VARCHAR(70) full_name, \
-        VARBYTE(128) bounding_box, \
-        VARBYTE(1024) attributes \
-        )")
+tv_places(place_id BIGINT PRIMARY KEY, \
+name VARCHAR(32), \
+url VARCHAR(512), \
+country VARCHAR(32), \
+place_type VARCHAR(32), \
+country_code CHAR(2), \
+full_name VARCHAR(70), \
+bounding_box VARBINARY(128), \
+attributes VARBINARY(1024)\
+)"      )
 
 
     def on_receive(self, data):
