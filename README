@@ -31,5 +31,89 @@ way.
 
 
 
+Database Description
+-------------------------------------------------------------------------------
+This description is tentative and WILL change as I compact the database and
+data redundency.  I have much more research to do, but I may even switch to 
+redis noSQL.
+
++------------------------+
+| Tables_in_twitter_test |
++------------------------+
+| tv_places              |
+| tv_tweets              |
+| tv_users               |
++------------------------+
+
+This table holds the information pertaining to a single tweet.
+Redundant information about users and places are stored in
+tv_users and tv_places respectively
++-------------------------+--------------+------+-----+---------+-------+
+| Field                   | Type         | Null | Key | Default | Extra |
++-------------------------+--------------+------+-----+---------+-------+
+| tweet_id                | bigint(20)   | NO   | PRI | NULL    |       |
+| created_at              | int(11)      | YES  |     | NULL    |       |
+| text                    | varchar(150) | YES  |     | NULL    |       |
+| source                  | varchar(512) | YES  |     | NULL    |       |
+| favorited               | bit(1)       | YES  |     | NULL    |       |
+| truncated               | bit(1)       | YES  |     | NULL    |       |
+| retweeted               | bit(1)       | YES  |     | NULL    |       |
+| retweet_count           | int(11)      | YES  |     | NULL    |       |
+| in_reply_to_user_id     | int(11)      | YES  |     | NULL    |       |
+| in_reply_to_status_id   | mediumtext   | YES  |     | NULL    |       |
+| in_reply_to_screen_name | varchar(512) | YES  |     | NULL    |       |
+| in_reply_to_user_id_str | mediumtext   | YES  |     | NULL    |       |
+| in_reply_to_id_str      | mediumtext   | YES  |     | NULL    |       |
+| id_str                  | mediumtext   | YES  |     | NULL    |       |
+| geo_type                | int(11)      | YES  |     | NULL    |       |
+| lat                     | float        | YES  |     | NULL    |       |
+| lon                     | float        | YES  |     | NULL    |       |
+| user_id                 | int(11)      | YES  | MUL | NULL    |       |
+| place_id                | bigint(20)   | YES  | MUL | NULL    |       |
++-------------------------+--------------+------+-----+---------+-------+
 
 
++------------------------------------+--------------+------+-----+---------+-------+
+| Field                              | Type         | Null | Key | Default | Extra |
++------------------------------------+--------------+------+-----+---------+-------+
+| user_id                            | bigint(20)   | NO   | PRI | NULL    |       |
+| user_flags                         | bit(10)      | YES  |     | NULL    |       |
+| favorites_count                    | int(11)      | YES  |     | NULL    |       |
+| friends_count                      | int(11)      | YES  |     | NULL    |       |
+| listed_count                       | int(11)      | YES  |     | NULL    |       |
+| utc_offset                         | int(11)      | YES  |     | NULL    |       |
+| statuses_count                     | int(11)      | YES  |     | NULL    |       |
+| followers_count                    | int(11)      | YES  |     | NULL    |       |
+| profile_image_url_https            | varchar(512) | YES  |     | NULL    |       |
+| profile_image_url                  | varchar(512) | YES  |     | NULL    |       |
+| profile_background_image_url_https | varchar(512) | YES  |     | NULL    |       |
+| profile_background_image_url       | varchar(512) | YES  |     | NULL    |       |
+| profile_sidebar_fill_color         | int(11)      | YES  |     | NULL    |       |
+| profile_text_color                 | int(11)      | YES  |     | NULL    |       |
+| profile_link_color                 | int(11)      | YES  |     | NULL    |       |
+| profile_background_color           | int(11)      | YES  |     | NULL    |       |
+| id_str                             | int(11)      | YES  |     | NULL    |       |
+| created_at                         | int(11)      | YES  |     | NULL    |       |
+| time_zone                          | int(11)      | YES  |     | NULL    |       |
+| profile_sidebar_border_color       | int(11)      | YES  |     | NULL    |       |
+| screen_name                        | varchar(512) | YES  |     | NULL    |       |
+| url                                | varchar(512) | YES  |     | NULL    |       |
+| description                        | varchar(512) | YES  |     | NULL    |       |
+| lang                               | varchar(24)  | YES  |     | NULL    |       |
+| place                              | int(11)      | YES  | MUL | NULL    |       |
++------------------------------------+--------------+------+-----+---------+-------+
+
+
++--------------+-----------------+------+-----+---------+-------+
+| Field        | Type            | Null | Key | Default | Extra |
++--------------+-----------------+------+-----+---------+-------+
+| place_id     | bigint(20)      | NO   | PRI | NULL    |       |
+| name         | varchar(32)     | YES  |     | NULL    |       |
+| url          | varchar(512)    | YES  |     | NULL    |       |
+| country      | varchar(32)     | YES  |     | NULL    |       |
+| place_type   | varchar(32)     | YES  |     | NULL    |       |
+| country_code | char(2)         | YES  |     | NULL    |       |
+| full_name    | varchar(70)     | YES  |     | NULL    |       |
+| bounding_box | varbinary(128)  | YES  |     | NULL    |       |
+| attributes   | varbinary(1024) | YES  |     | NULL    |       |
++--------------+-----------------+------+-----+---------+-------+

@@ -39,28 +39,13 @@ class Client:
         
     def create_tables(self):
         self.db_cursor.execute("CREATE TABLE IF NOT EXISTS \
-tv_tweets(tweet_id BIGINT PRIMARY KEY, \
-created_at INT, \
-text VARCHAR(150), \
-source VARCHAR(512), \
-favorited BIT,\
-truncated BIT, \
-retweeted BIT, \
-retweet_count INT, \
-in_reply_to_user_id INT, \
-in_reply_to_status_id LONG, \
-in_reply_to_screen_name VARCHAR(512), \
-in_reply_to_user_id_str LONG, \
-in_reply_to_id_str LONG, \
-id_str LONG, \
-geo_type INT, \
-lat FLOAT, \
-lon FLOAT, \
-user_id INT, \
-FOREIGN KEY (user_id) REFERENCES tv_users(user_id), \
-place_id BIGINT, \
-FOREIGN KEY (place_id) REFERENCES tv_places(place_id) \
-)")
+        tv_tweets(tweet_id BIGINT PRIMARY KEY, created_at INT, text VARCHAR(150), \
+        source VARCHAR(512), favorited BIT, truncated BIT, retweeted BIT, \
+        retweet_count INT, in_reply_to_user_id INT, in_reply_to_status_id LONG, \
+        in_reply_to_screen_name VARCHAR(512), in_reply_to_user_id_str LONG, \
+        in_reply_to_id_str LONG, id_str LONG, geo_type INT, lat FLOAT, lon FLOAT, \
+        user_id INT, FOREIGN KEY (user_id) REFERENCES tv_users(user_id), \
+        place_id BIGINT, FOREIGN KEY (place_id) REFERENCES tv_places(place_id) )")
 
 #properties in user_flags bit field--------------------
 #profile_use_background_image BIT, \
