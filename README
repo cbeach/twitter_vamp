@@ -7,7 +7,10 @@ into nautral language processing, machine learning, and data analysis.
 
 TODO:
 -------------------------------------------------------------------------------
-* Test that database initialization.  Once functioning start collecting data.
+* Start Collecting Data
+    * Change schema to be inline with more basic setup
+    * Write insert query functions
+    * Write control program to dynamically change insertion object
 * Write database transfer tool.
 * Begin iterative optimization of database.
 	* Low hanging fruit:
@@ -55,9 +58,7 @@ tv_users and tv_places respectively
 | created_at              | int(11)      | YES  |     | NULL    |       |
 | text                    | varchar(150) | YES  |     | NULL    |       |
 | source                  | varchar(512) | YES  |     | NULL    |       |
-| favorited               | bit(1)       | YES  |     | NULL    |       |
-| truncated               | bit(1)       | YES  |     | NULL    |       |
-| retweeted               | bit(1)       | YES  |     | NULL    |       |
+| tweet_flags             | bit(3)       | YES  |     | NULL    |       |
 | retweet_count           | int(11)      | YES  |     | NULL    |       |
 | in_reply_to_user_id     | int(11)      | YES  |     | NULL    |       |
 | in_reply_to_status_id   | mediumtext   | YES  |     | NULL    |       |
