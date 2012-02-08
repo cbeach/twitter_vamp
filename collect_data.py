@@ -13,17 +13,23 @@ class Client:
     f = open('speed_test', 'a')
     p = open('pickled', 'w')
     tweets = []
-    user_flags = ["profile_use_background_image", "contributors_enabled", \
-                  "verified", "is_translator", "geo_enabled","protected", \
-                  "default_profile", "profile_background_title", \
-                  "show_all_inline_media", "default_profile_image"]
-    user_columns = ["id", "user_flags", "favourites_count", "friends_count", \
-                    "listed_count", "utc_offset", "statuses_count", "followers_count", \
-                    "profile_image_url_https", "profile_image_url", "profile_background_image_url_https", \
-                    "profile_background_image_url", "profile_sidebar_fill_color", "profile_text_color", \
-                    "profile_link_color", "profile_background_color", "id_str", "created_at", "time_zone", \
-                    "profile_sidebar_border_color", "screen_name", "url", "description", "lang", "place"]
 
+    user_flags =     ["profile_use_background_image", "contributors_enabled", \
+                      "verified", "is_translator", "geo_enabled","protected", \
+                      "default_profile", "profile_background_title", \
+                      "show_all_inline_media", "default_profile_image"]
+    tweet_flags =    ["favorited", "truncated", "retweeted"]
+
+    user_columns =   ["id", "user_flags", "favourites_count", "friends_count", \
+                      "listed_count", "utc_offset", "statuses_count", "followers_count", \
+                      "profile_image_url_https", "profile_image_url", "profile_background_image_url_https", \
+                      "profile_background_image_url", "profile_sidebar_fill_color", "profile_text_color", \
+                      "profile_link_color", "profile_background_color", "id_str", "created_at", "time_zone", \
+                      "profile_sidebar_border_color", "screen_name", "url", "description", "lang", "place"]
+    tweet_columns =  ["id", "created_at", "text", "source", "tweet_flags", "retweet_count", "in_reply_to_user_id", \
+                      "in_reply_to_status_id", "in_reply_to_screen_name", \
+                      "in_reply_to_user_id_str", "in_reply_to_id_str", "id_str", \
+                      "geo_type", "lat", "lon", "user_id", "place_id"]
 
     def __init__(self):
 
@@ -49,31 +55,15 @@ class Client:
             sys.exit()
         
     def create_tables(self):
-        #properties in tweet_flags bit field------------------
-        #favorited
-        #truncated
-        #retweeted
+        
         self.db_cursor.execute("CREATE TABLE IF NOT EXISTS \
-        tv_tweets(tweet_id BIGINT PRIMARY KEY, created_at INT, text VARCHAR(150), \
-        source VARCHAR(512), tweet_flags BIT(3), \
+        tv_tweets(tweet_id BIGINT PRIMARY KEY, created_at INT, text VARCHAR(256), \
+        source VARCHAR(512), tweet_flags INT, \
         retweet_count INT, in_reply_to_user_id INT, in_reply_to_status_id LONG, \
         in_reply_to_screen_name VARCHAR(512), in_reply_to_user_id_str LONG, \
         in_reply_to_id_str LONG, id_str LONG, geo_type VARCHAR(64), lat FLOAT, lon FLOAT, \
         user_id INT, FOREIGN KEY (user_id) REFERENCES tv_users(user_id), \
         place_id BIGINT, FOREIGN KEY (place_id) REFERENCES tv_places(place_id) )")
-
-        #properties in user_flags bit field--------------------
-        #profile_use_background_image BIT, \
-        #contributors_enabled BIT, \
-        #verified BIT, \
-        #is_translator BIT, \
-        #geo_enabled BIT, \
-        #protected BIT, \
-        #default_profile BIT, \
-        #profile_background_title BIT, \
-        #show_all _inline_media BIT, \
-        #default_profile_image BIT, \
-
 
         self.db_cursor.execute("CREATE TABLE IF NOT EXISTS \
         tv_users(user_id BIGINT PRIMARY KEY, user_flags BIT(10), favorites_count INT, \
@@ -96,10 +86,9 @@ class Client:
     def db_insert(self, content):
         
         tweet_insert = "INSERT INTO tv_tweets(tweet_id, created_at, text, source, \
-        favorited, truncated, retweeted, retweet_count, in_reply_to_user_id, \
+        tweet_flags, retweet_count, in_reply_to_user_id, \
         in_reply_to_status_id, in_reply_to_screen_name, in_reply_to_user_id_str, \
-        in_reply_to_id_str, id_str, geo_type, lat, lon, user_id, place_id) VALUES( \
-        "
+        in_reply_to_id_str, id_str, geo_type, lat, lon, user_id, place_id) VALUES("
 
         user_insert = "INSERT INTO tv_users(user_id, user_flags, favorites_count, \
         friends_count, listed_count, utc_offset, statuses_count, followers_count, \
@@ -112,16 +101,29 @@ class Client:
         place_insert = "INSERT INTO tv_places(place_id, name, url, country, place_type, \
         countrycode, full_name, bounding_box, attributes) VALUES( "
         
-        #tweet_data = self.format_tweet(content)
+        tweet_data = self.format_tweet(content)
         user_data = self.format_user(content)
         #place_data = self.format_place(content)
-        if user_data != None: 
-            for i in user_data:
-                user_insert += "'" + str(i) + "'" + ","
-            user_insert = user_insert.rstrip(' ,')
-            user_insert += ');'
+#        if user_data != None: 
+#            for i in user_data:
+#                user_insert += "'" + str(i) + "'" + ","
+#            user_insert = user_insert.rstrip(' ,')
+#            user_insert += ');'
+#            try: 
+#                self.db_cursor.execute(user_insert)
+#            except MySQLdb.IntegrityError:
+#                pass
+        if tweet_data != None: 
+            print(len(tweet_data))
+            print(len(self.tweet_columns))
+            count = 0
+            for i in tweet_data:
+                tweet_insert += "'" + str(i) + "'" + ","
+            tweet_insert = tweet_insert.rstrip(' ,')
+            tweet_insert += ');'
+            print(tweet_insert)
             try: 
-                self.db_cursor.execute(user_insert)
+                self.db_cursor.execute(tweet_insert)
             except MySQLdb.IntegrityError:
                 pass
         
@@ -131,37 +133,75 @@ class Client:
     #
     #----------------------------------------------------
     def format_tweet(self,content):
-        values = []
-        flags = 0
-        if content.get("favorited") == 'True':
-            flags << 1
-            flags += 1
-        if content.get("truncated") == 'True':
-            flags << 1
-            flags += 1
-        if content.get("retweeted") == 'True':
-            flags << 1
-            flags += 1
-        try:
-            values.append(content.get("id"))
-            values.append(time.mktime(time.strptime(content.get("created_at"), '%a %b %d %H:%M:%S +0000 %Y')))
-            values.append(content.get("text"))
-            values.append(content.get("source"))
-            values.append(str(flags))
-            values.append(content.get("retweet_count"))
-            values.append(content.get("in_reply_to_user_id"))
-            values.append(content.get("in_reply_to_status_id"))
-            values.append(content.get("in_reply_to_screen_name"))
-            values.append(content.get("in_reply_to_user_id_str"))
-            values.append(content.get("in_reply_to_id_str"))
-            values.append(content.get("geo_type"))
-            values.append(content.get("lat"))
-            values.append(content.get("lon"))
-            values.append(content.get("user_id"))
-            values.append(content.get("place_id"))
-        except TypeError:
-            pass
 
+        bit_field = 0
+        values = []
+
+        for i in self.tweet_flags:
+            try:
+                if content.get(i) != None:
+                    bit_field += self.__to_bool(content.get(i))
+                bit_field << 1
+            except TypeError:
+                bit_field << 1 
+
+        for i in self.tweet_columns:
+            try:
+                if i == "tweet_flags":
+                    values.append(bit_field)
+                elif i == "created_at":
+                    if content.get(i) != None:
+                        values.append(time.mktime(time.strptime(content.get("created_at"), '%a %b %d %H:%M:%S +0000 %Y')))
+                    else:
+                        values.append(time.time())
+                elif i == "text" and content.get(i) != None:
+                    values.append(MySQLdb.escape_string(content.get(i).encode('utf-8')))
+                elif i == "user_id" and content.get("user") != None:
+                    values.append(content.get("user").get("id"))
+                elif i == "source":
+                    if content.get("source") != None:
+                        try:
+                            values.append(MySQLdb.escape_string(content.get(i).encode('utf-8')))
+                        except (ValueError, AttributeError):
+                            values.append("NULL")
+                    else:
+                        values.append(-1)
+                elif i == "in_reply_to_user_id":
+                    try:
+                        values.append(int(content.get("place").get(i),16))
+                    except (ValueError, AttributeError,TypeError):
+                        values.append(-1)
+                elif i == "place_id":
+                    if content.get("place") != None:
+                        try:
+                            values.append(int(content.get("place").get("id"),16))
+                        except (ValueError, AttributeError):
+                            values.append(-1)
+                    else:
+                        values.append(-1)
+                elif i == "geo" and content.get("geo") != None:
+                    values.append(content.get("geo").get("type"))
+
+                elif i == "lat":
+                    if content.get("geo") != None:
+                        values.append(content.get("geo").get("coordinates")[0])
+                    else: 
+                        values.append(1000)
+                elif i == "lon":
+                    if content.get("geo") != None:
+                        values.append(content.get("geo").get("coordinates")[1])
+                    else: 
+                        values.append(1000)
+                elif content.get(i) == None:
+                    values.append("NULL")
+
+                else:
+                    values.append(content.get(i))
+            except TypeError as e:
+                print "OH NOOOOS"
+                print i
+                print e
+        return values
 #TODO: Add a lookup for the place and user foreign keys ------------       
  
     def format_place(self, content):
@@ -231,8 +271,8 @@ class Client:
                         values.append(int(content.get("user").get(i),16))
                     except (ValueError, AttributeError):
                         values.append(-1)
-                elif i == "place" and content.get("user").get(i) == None:
-                    values.append(0)
+                elif i == "place" and content.get("place") != None:
+                    values.append(content.get("place").get("id"))
                 elif i == "utc_offset" and content.get("user").get(i) == None:
                     values.append(-1)
                 elif content.get("user").get(i) == None:
