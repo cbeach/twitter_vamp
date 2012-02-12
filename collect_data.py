@@ -31,6 +31,8 @@ class Client:
                       "in_reply_to_user_id_str", "in_reply_to_id_str", "id_str", \
                       "geo_type", "lat", "lon", "user_id", "place_id"]
 
+    place_columns =  ["id", "name", "url", "country", "place_type", "country_code", "full_name", \
+                      "bounding_box","attriubutes"]        
     def __init__(self):
 
         self.db_init()
@@ -74,7 +76,7 @@ class Client:
         profile_text_color INT, profile_link_color INT, profile_background_color INT, \
         id_str INT, created_at INT, time_zone VARCHAR(32), profile_sidebar_border_color INT, \
         screen_name VARCHAR(512), url VARCHAR(512), description VARCHAR(512), \
-        lang VARCHAR(24), place INT, FOREIGN KEY (place) REFERENCES tv_places(place_id) \
+        lang VARCHAR(24), place BIGINT, FOREIGN KEY (place) REFERENCES tv_places(place_id) \
         )")  
         
         self.db_cursor.execute("CREATE TABLE IF NOT EXISTS \
@@ -99,34 +101,68 @@ class Client:
         VALUES("
 
         place_insert = "INSERT INTO tv_places(place_id, name, url, country, place_type, \
-        countrycode, full_name, bounding_box, attributes) VALUES( "
+        country_code, full_name, bounding_box, attributes) VALUES( "
         
         tweet_data = self.format_tweet(content)
         user_data = self.format_user(content)
-        #place_data = self.format_place(content)
-#        if user_data != None: 
-#            for i in user_data:
-#                user_insert += "'" + str(i) + "'" + ","
-#            user_insert = user_insert.rstrip(' ,')
-#            user_insert += ');'
-#            try: 
-#                self.db_cursor.execute(user_insert)
-#            except MySQLdb.IntegrityError:
-#                pass
+        place_data = self.format_place(content)
+
+        if user_data != None: 
+            for i in user_data:
+                try:
+                    user_insert += "'" + str(i) + "'" + ","
+                except UnicodeEncodeError:
+                    print("\n\n\n")
+                    print(user_insert)
+                    print(i)
+                    user_insert += "'NULL',"
+            user_insert = user_insert.rstrip(' ,')
+            user_insert += ');'
+            try: 
+                self.db_cursor.execute(user_insert)
+            except MySQLdb.IntegrityError as e:
+                pass
+            except MySQLdb.OperationalError as e:
+                print('Error %d: %s'% (e.args[0], e.args[1]))
+            except MySQLdb.ProgrammingError as e:
+                print('Error %d: %s'% (e.args[0], e.args[1]))
         if tweet_data != None: 
-            print(len(tweet_data))
-            print(len(self.tweet_columns))
             count = 0
             for i in tweet_data:
-                tweet_insert += "'" + str(i) + "'" + ","
-            tweet_insert = tweet_insert.rstrip(' ,')
-            tweet_insert += ');'
-            print(tweet_insert)
+                try:
+                    tweet_insert += "'" + str(i) + "'" + ","
+                except UnicodeEncodeError:
+                    print("\n\n\n")
+                    print(tweet_insert)
+                    print(i)
+                    tweet_insert += "'NULL',"
+            tweet_insert = tweet_insert.rstrip(' ,') + ');'
             try: 
                 self.db_cursor.execute(tweet_insert)
-            except MySQLdb.IntegrityError:
+            except MySQLdb.IntegrityError as e:
                 pass
-        
+            except MySQLdb.OperationalError as e:
+                print('Error %d: %s'% (e.args[0], e.args[1]))
+            except MySQLdb.ProgrammingError as e:
+                print('Error %d: %s'% (e.args[0], e.args[1]))
+        if place_data != None:
+            for i in place_data:
+                try:
+                    place_insert += "'" + str(i) + "'" + ","
+                except UnicodeEncodeError:
+                    print("\n\n\n")
+                    print(place_insert)
+                    print(i)
+                    place_insert += "'NULL',"
+            place_insert = place_insert.rstrip(' ,') + ');'
+            try: 
+                self.db_cursor.execute(place_insert)
+            except MySQLdb.IntegrityError as e:
+                pass
+            except MySQLdb.OperationalError as e:
+                print('Error %d: %s'% (e.args[0], e.args[1]))
+            except MySQLdb.ProgrammingError as e:
+                print('Error %d: %s'% (e.args[0], e.args[1]))
     #----------------------------------------------------
     #
     #This is going to be SOOOO ugly :(
@@ -207,20 +243,35 @@ class Client:
     def format_place(self, content):
         
         values = []
-        
-        try:
-            values.append(content.get("id"))
-            values.append(content.get("name"))
-            values.append(content.get("url"))
-            values.append(content.get("contry"))
-            values.append(content.get("place_type"))
-            values.append(content.get("country_code"))
-            values.append(content.get("full_name"))
-            values.append(content.get("bounding_box"))
-            values.append(content.get("attributes"))
-        except TypeError:
-            pass
+        for i in self.place_columns:
+            try: 
+                if content.get("place") == None:
+                    values.append("NULL")
+                elif content.get("place").get(i) == None:
+                    values.append("NULL")
+                elif i == "bounding_box":
+                    values.append(content.get("place").get(i).get("coordinates"))
+                elif i == "name" or i == "full_name":
+                    try:
+                        values.append(MySQLdb.escape_string(content.get("place").get(i).encode('utf-8')))
+                    except (ValueError, AttributeError):
+                        values.append("NULL")
+                elif i == "id": 
+                    if content.get("place") != None:
+                        try:
+                            values.append(int(content.get("place").get("id"),16))
+                        except (ValueError, AttributeError):
+                            values.append(-1)
+                    else:
+                        values.append(-1)
+                else:
+                    values.append( content.get("place").get(i))
+            except TypeError as e:
+                print "OH NOOOOS"
+                print i
+                print e
         return values
+
 
     def format_user(self, content):
         
@@ -271,8 +322,14 @@ class Client:
                         values.append(int(content.get("user").get(i),16))
                     except (ValueError, AttributeError):
                         values.append(-1)
-                elif i == "place" and content.get("place") != None:
-                    values.append(content.get("place").get("id"))
+                elif i == "place":
+                    if content.get("place") != None:
+                        try:
+                            values.append(int(content.get("place").get("id"),16))
+                        except (ValueError, AttributeError):
+                            values.append(-1)
+                    else:
+                        values.append(-1)
                 elif i == "utc_offset" and content.get("user").get(i) == None:
                     values.append(-1)
                 elif content.get("user").get(i) == None:
@@ -280,8 +337,9 @@ class Client:
                 else:
                     values.append(content.get("user").get(i))
             except TypeError as e:
-                print "OH NOOOOS"
-                print e
+                print("OH NOOOOS")
+                print(e)
+                print(i)
         return values
 #TODO: Add a lookup for the place foreign key ------------       
     
@@ -293,54 +351,15 @@ class Client:
 
         if data.endswith("\r\n") and self.buffer.strip():
             content = json.loads(self.buffer)
-            #print(content.get("user"))
             self.buffer = ""
             
-            if self.tweet_count < 1000:
+            if self.tweet_count < 10000:
                 self.db_insert(content)
             else:
                 print("Done!")
                 self.p.write(pickle.dumps(self.tweets))
                 return 0
             self.tweet_count += 1
-    
-    def print_user_attrib(self,data, attrib):
-        try:
-            if data["user"] != None:
-                if data["user"][attrib] != None:
-                    print(type(data["user"][attrib]), attrib)
-                    return True
-
-        except TypeError:
-            return False
-        except KeyError:
-            return False
-
-    def get_tweets(self):
-        return self.tweet_count[:]
-
-    def close_culr(self):
-        self.conn.close()
-
-    def is_iterable(self,obj):
-        try:
-            it = iter(obj)
-        except TypeError:
-            return False
-        return True
-
-    def search_object(self, obj, base_string):
-        types_and_keys = Set()
-        if self.is_iterable(obj):
-            try:
-                for i in obj.keys():
-                    if self.is_iterable(obj) == True:
-                        types_and_keys.add(self.search_object(obj[i], base_string+"->"+i))
-                    else:
-                        return base_string+"->"+str(type((obj[i])),i)+"\n"
-            except AttributeError:
-                return base_string+"->"+str(type(obj))
-        return types_and_keys
     
     def __to_bool(self, string):
         if string == 'True':
