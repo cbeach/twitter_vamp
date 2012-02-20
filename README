@@ -7,14 +7,14 @@ into natural language processing, machine learning, and data analysis.
 
 TODO:
 -------------------------------------------------------------------------------
+* Create IRC bot for control.
+* Use a config file
 * Start Collecting Data
-    * Change schema to be inline with more basic setup
-    * Write insert query functions
-		-Update: User insertion is so far stable, tweet and place still need
-		 to be done
     * Write control program to dynamically change insertion object
 * Write database transfer tool.
 * Make sure ALL exceptions from MySQLdb are caught
+    * Output more meaningfull error statements
+    * Output to a log file
 * Begin iteraictive optimization of database.
 	* Low hanging fruit:
 		* Reduce redundency in data: Optimize using lookup tables for text, and
@@ -25,7 +25,6 @@ TODO:
 		* Column-wise optimization:  Reduce as much data as possible to single
 									 columns to reduce database overhead.
 
-*Create IRC bot for control.
 
 Release Notes
 -------------------------------------------------------------------------------

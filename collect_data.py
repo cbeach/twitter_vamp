@@ -112,9 +112,7 @@ class Client:
                 try:
                     user_insert += "'" + str(i) + "'" + ","
                 except UnicodeEncodeError:
-                    print("\n\n\n")
-                    print(user_insert)
-                    print(i)
+                    print('Error %d: %s'% (e.args[0], e.args[1]))
                     user_insert += "'NULL',"
             user_insert = user_insert.rstrip(' ,')
             user_insert += ');'
@@ -132,7 +130,6 @@ class Client:
                 try:
                     tweet_insert += "'" + str(i) + "'" + ","
                 except UnicodeEncodeError:
-                    print("\n\n\n")
                     print(tweet_insert)
                     print(i)
                     tweet_insert += "'NULL',"
