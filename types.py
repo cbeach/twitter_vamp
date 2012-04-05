@@ -1,8 +1,8 @@
 contributors:                           None
 
-favorited:                              bool
-truncated:                              bool
-retweeted:                              bool
+#favorited:                              bool
+#truncated:                              bool
+#retweeted:                              bool
 
 in_reply_to_user_id:                    int
 retweet_count:                          int
@@ -19,25 +19,26 @@ in_reply_to_status_id_str:              unicode$long
 id_str:                                 unicode$long
 
 
-geo:                                    dict
-    type:                               unicode
-    coordinates:                        list:float
-
-coordinates:                            dict
-    type:                               unicode
-    coordinates:                        list
-
 entities:                               dict
     user_mentions:                      list
     hashtags:                           list
     urls:                               list
 
+
+geo:                                    dict
+    type:                               unicode
+    coordinates:                        list:float
+
+#coordinates:                            dict
+#    type:                               unicode
+#    urls:                               list
+
 place:                                  dict
-    name:                               unicode$foreign key
-    url:                                unicode$None            #redundent, can be constructed from country code
-    country:                            unicode$foreign key
-    place_type:                         unicode$int             #looks like it's things like city, admin, etc
-    country_code:                       unicode$unicode
+   name:                               unicode$foreign key
+   url:                                unicode$None            #redundent, can be constructed from country code
+   country:                            unicode$foreign key
+   place_type:                         unicode$int             #looks like it's things like city, admin, etc
+   country_code:                       unicode$unicode
    full_name:                          unicode$foreign key     #probably redundant
    id:                                 unicode$int/long        #it looks like it's a long hexidecimal
    bounding_box:                       dict
@@ -46,19 +47,19 @@ place:                                  dict
    attributes:                         dict:None
 
 user: dict
-    follow_request_sent:                None
-    following:                          None
-    notifications:                      None
-    profile_use_background_image:       bool$bit
-    contributors_enabled:               bool$bit
-    verified:                           bool$bit
-    is_translator:                      bool$bit
-    geo_enabled:                        bool$bit
-    protected:                          bool$bit
-    default_profile:                    bool$bit
-    profile_background_tile:            bool$bit
-    show_all_inline_media:              bool$bit
-    default_profile_image:              bool$bit
+#    follow_request_sent:                None
+#    following:                          None
+#    notifications:                      None
+#    profile_use_background_image:       bool$bit
+#    contributors_enabled:               bool$bit
+#    verified:                           bool$bit
+#    is_translator:                      bool$bit
+#    geo_enabled:                        bool$bit
+#    protected:                          bool$bit
+#    default_profile:                    bool$bit
+#    profile_background_tile:            bool$bit
+#    show_all_inline_media:              bool$bit
+#    default_profile_image:              bool$bit
     id:                                 int$int
     favourites_count:                   int$short
     friends_count:                      int$short

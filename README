@@ -5,6 +5,8 @@ Copyright © 2011 Casey Beach
 Developed by Casey Beach to be used as a data collection tool for research 
 into natural language processing, machine learning, and data analysis.
 
+Special thanks to Derek Z Hurley for his work on clubot.
+
 TODO:
 -------------------------------------------------------------------------------
 * Create IRC bot for control.
@@ -32,7 +34,6 @@ Release Notes
 user name and password.  The twitter streaming api is dumped straight to the
 terminal.  The data base initialization is written but not yet tested in any
 way.
-
 
 
 
