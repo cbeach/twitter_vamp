@@ -1,8 +1,8 @@
 import json, pika, sys
 
 class raw_feed:
-    def read(self):
-        return raw_input()
+    def readline(self):
+        return raw_input() + '\n'
 
 class twitter_feed:
     count = 0
@@ -10,7 +10,7 @@ class twitter_feed:
         self.callback = callback
         self.source_type = source_type
         if source_type == 1:
-            self.input_obj = raw_input()
+            self.input_obj = raw_feed()
         elif source_type == 2:
             self.input_obj = open(source_name)
         elif source_type == 3:
@@ -44,7 +44,7 @@ class twitter_feed:
                 if buffer.endswith("\r\n") and buffer.strip():
                     try:
                         content = json.loads(buffer)
-                        self.callback(content)
+                        self.callback(ch,method,properties,content)
                         buffer = ''
                         break
                     except ValueError:
@@ -54,7 +54,6 @@ class twitter_feed:
             try:
                 body = body.strip()
                 content = json.loads(body)
-                print(content)
                 self.callback(ch, method, properties, content)
                 buffer = ''
             except ValueError as e:
@@ -67,7 +66,7 @@ class twitter_feed:
         if self.source_type == 1 or self.source_type == 2:
             while(True):
                 try:
-                    self.get_tweet()
+                    self.get_tweet(None,None,None,None)
                 except EOFError:
                     break
         elif self.source_type == 3:

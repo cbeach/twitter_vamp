@@ -1,9 +1,14 @@
 import raw_twitter_subscriber as rts
-import pika, pickle
+import pika, pickle, json
 
 class parser:
-    def __init__(self, source_type, source_name=None):
-        self.connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
+    def __init__(self, source_type, source_name=None, publish_host='localhost'):
+        """
+        Open the channel and connection to rabbitmq for publishing.
+        Then create the Twitter feed for getting the raw tweets from
+        the API
+        """
+        self.connection = pika.BlockingConnection(pika.ConnectionParameters(host=publish_host))
         self.channel = self.connection.channel()
 
         self.channel.exchange_declare(exchange='direct.text',type='direct')
@@ -41,30 +46,30 @@ class parser:
     
     def publish_text(self,id,text):
         message = {'id':id, 'text':text}
-        self.channel.basic_publish(exchange='direct.text', routing_key='parse.text', body=pickle.dumps(message))
+        self.channel.basic_publish(exchange='direct.text', routing_key='parse.text', body=json.dumps(message))
         
     def publish_mentions(self,id, mentions):
         message = {'id':id, 'mentions':mentions}
-        self.channel.basic_publish(exchange='direct.mentions', routing_key='parse.mentions', body=pickle.dumps(message))
+        self.channel.basic_publish(exchange='direct.mentions', routing_key='parse.mentions', body=json.dumps(message))
         
     def publish_hashtags(self,id, hashtags):
         message = {'id':id, 'hashtags':hashtags}
-        self.channel.basic_publish(exchange='direct.hashtags', routing_key='parse.hashtags', body=pickle.dumps(message))
+        self.channel.basic_publish(exchange='direct.hashtags', routing_key='parse.hashtags', body=json.dumps(message))
         
     def publish_urls(self,id, urls):
         message = {'id':id, 'urls':urls}
-        self.channel.basic_publish(exchange='direct.urls', routing_key='parse.urls', body=pickle.dumps(message))
+        self.channel.basic_publish(exchange='direct.urls', routing_key='parse.urls', body=json.dumps(message))
         
     def publish_user(self,id,user):
         message = {'id':id, 'users':user}
-        self.channel.basic_publish(exchange='direct.user', routing_key='parse.user', body=pickle.dumps(message))
+        self.channel.basic_publish(exchange='direct.user', routing_key='parse.user', body=json.dumps(message))
         
     def publish_place(self,id,place):
         message = {'id':id, 'place':place}
-        self.channel.basic_publish(exchange='direct.place', routing_key='parse.place', body=pickle.dumps(message))
+        self.channel.basic_publish(exchange='direct.place', routing_key='parse.place', body=json.dumps(message))
         
     def publish_delete(self,delete):
-        self.channel.basic_publish(exchange='direct.delete', routing_key='parse.delete', body=pickle.dumps(delete))
+        self.channel.basic_publish(exchange='direct.delete', routing_key='parse.delete', body=json.dumps(delete))
         
 
 if __name__=='__main__':
