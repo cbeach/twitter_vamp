@@ -19,9 +19,9 @@ class twitter_feed:
 
             self.connection = pika.BlockingConnection(pika.ConnectionParameters(host_name))
             self.channel = self.connection.channel()
-            self.channel.exchange_declare(exchange='direct.raw', type='direct')
+            self.channel.exchange_declare(exchange=self.exchange, type='direct')
             self.queue = self.channel.queue_declare(exclusive=True)
-            self.channel.queue_bind(exchange=self.exchange, queue=self.queue.method.queue, routing_key='raw')
+            self.channel.queue_bind(exchange=self.exchange, queue=self.queue.method.queue, routing_key=routing_key)
             self.channel.basic_consume(self.get_tweet,self.queue.method.queue)
 
     def get_tweet(self, ch, method, properties, body):

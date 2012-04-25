@@ -1,4 +1,4 @@
-import raw_twitter_subscriber as rts
+import twitter_subscriber as rts
 import pika, pickle, json
 
 class parser:
@@ -23,7 +23,8 @@ class parser:
         self.tweet_source.start_feed()
 
     def parse_tweet(self, ch, message, properties, body):
-        print('hello')
+
+        print(str(body))
         if u'text' in body:
             self.publish_text(body.get('id'),body.get('text'))
 
@@ -71,7 +72,5 @@ class parser:
     def publish_delete(self,delete):
         self.channel.basic_publish(exchange='direct.delete', routing_key='parse.delete', body=json.dumps(delete))
         
-
-if __name__=='__main__':
+if __name__ == "__main__":
     p = parser(3)
-     
