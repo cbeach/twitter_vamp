@@ -6,7 +6,7 @@ class raw_feed:
 
 class twitter_feed:
     count = 0
-    def __init__(self, source_type, callback, source_name='', host_name='localhost', exchange='', routing_key=''):
+    def __init__(self, source_type, callback, source_name='', host_name='localhost', exchange='', routing_key='',exchange_type='direct'):
         self.callback = callback
         self.source_type = source_type
         if source_type == 1:
@@ -19,7 +19,7 @@ class twitter_feed:
 
             self.connection = pika.BlockingConnection(pika.ConnectionParameters(host_name))
             self.channel = self.connection.channel()
-            self.channel.exchange_declare(exchange=self.exchange, type='direct')
+            self.channel.exchange_declare(exchange=self.exchange, type = exchange_type)
             self.queue = self.channel.queue_declare(exclusive=True)
             self.channel.queue_bind(exchange=self.exchange, queue=self.queue.method.queue, routing_key=routing_key)
             self.channel.basic_consume(self.get_tweet,self.queue.method.queue)
@@ -55,6 +55,7 @@ class twitter_feed:
                 body = body.strip()
                 content = json.loads(body)
                 self.callback(ch, method, properties, content)
+                ch.basic_ack(delivery_tag = method.delivery_tag)
                 buffer = ''
             except ValueError as e:
                 print("ValueError: "+ str(e))

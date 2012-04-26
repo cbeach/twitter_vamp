@@ -12,7 +12,7 @@ class Fetcher:
         self.connection = pika.BlockingConnection(pika.ConnectionParameters(host=config.RABBITMQ_HOST))
         self.channel = self.connection.channel()
 
-        self.channel.exchange_declare(exchange=config.RAW_EXCHANGE, type='direct')
+        self.channel.exchange_declare(exchange=config.RAW_EXCHANGE, type='fanout')
         
         self.buff = ''
         self.twitter_con = pycurl.Curl()

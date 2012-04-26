@@ -19,12 +19,11 @@ class parser:
         self.channel.exchange_declare(exchange='direct.place',type='direct')
         self.channel.exchange_declare(exchange='direct.delete',type='direct')
         
-        self.tweet_source = rts.twitter_feed(source_type, self.parse_tweet, source_name = source_name, exchange='direct.raw', routing_key = 'raw')
+        self.tweet_source = rts.twitter_feed(source_type, self.parse_tweet, source_name = source_name, exchange='direct.raw', routing_key = 'raw', exchange_type = 'fanout')
         self.tweet_source.start_feed()
 
     def parse_tweet(self, ch, message, properties, body):
 
-        print(str(body))
         if u'text' in body:
             self.publish_text(body.get('id'),body.get('text'))
 
