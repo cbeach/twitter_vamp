@@ -16,9 +16,9 @@ class Archiver:
 
     tweets_per_archive = 100000
 
-    def __init__(self,archive_dir='',source_type = 3, name = ''):
+    def __init__(self,archive_dir='', name = ''):
         
-        self.tweet_source = rts.twitter_feed(source_type, self.archive_tweet, source_name = name, exchange='direct.raw', routing_key = 'raw',exchange_type = 'fanout')
+        self.tweet_source = rts.twitter_feed(self.archive_tweet, source_name = name, exchange='direct.raw', routing_key = 'raw',exchange_type = 'fanout')
 
         self.archive_dir = archive_dir
         self.new_archive() 

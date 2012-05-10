@@ -2,7 +2,7 @@ import twitter_subscriber as rts
 import pika, pickle, json
 
 class parser:
-    def __init__(self, source_type, source_name=None, publish_host='localhost'):
+    def __init__(self, source_name=None, publish_host='localhost'):
         """
         Open the channel and connection to rabbitmq for publishing.
         Then create the Twitter feed for getting the raw tweets from
@@ -18,8 +18,10 @@ class parser:
         self.channel.exchange_declare(exchange='direct.user',type='direct')
         self.channel.exchange_declare(exchange='direct.place',type='direct')
         self.channel.exchange_declare(exchange='direct.delete',type='direct')
-        
-        self.tweet_source = rts.twitter_feed(source_type, self.parse_tweet, source_name = source_name, exchange='direct.raw', routing_key = 'raw', exchange_type = 'fanout')
+        self.channel.exchange_declare(exchange='direct.uhmr', type='direct')
+
+
+        self.tweet_source = rts.twitter_feed(self.parse_tweet, source_name = source_name, exchange='direct.raw', routing_key = 'raw', exchange_type = 'fanout')
         self.tweet_source.start_feed()
 
     def parse_tweet(self, ch, message, properties, body):
@@ -42,6 +44,8 @@ class parser:
             self.publish_place(body.get('id'),body.get('place'))
         if u'delete' in body:
             self.publish_delete(body)
+        if u'user' in body and u'entities' in body:
+            self.publish_social_info(body.get('id'), body.get('user'), body.get('entities'))
         #implement delete
     
     def publish_text(self,id,text):
@@ -61,7 +65,7 @@ class parser:
         self.channel.basic_publish(exchange='direct.urls', routing_key='parse.urls', body=json.dumps(message))
         
     def publish_user(self,id,user):
-        message = {'id':id, 'users':user}
+        message = {'id':id, 'user':user}
         self.channel.basic_publish(exchange='direct.user', routing_key='parse.user', body=json.dumps(message))
         
     def publish_place(self,id,place):
@@ -70,6 +74,9 @@ class parser:
         
     def publish_delete(self,delete):
         self.channel.basic_publish(exchange='direct.delete', routing_key='parse.delete', body=json.dumps(delete))
-        
+
+    def publish_social_info(self, id, user, entities):
+        message = {'id':id, 'user':user, 'entities':entities,}
+        self.channel.basic_publish(exchange='direct.uhmr', routing_key='parse.uhmr', body=json.dumps(message))
 if __name__ == "__main__":
-    p = parser(3)
+    p = parser()

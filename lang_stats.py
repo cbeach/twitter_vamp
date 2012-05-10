@@ -9,7 +9,7 @@ class lang_stats:
     lang_sample = {}
 
     def __init__(self):
-        self.tf = twitter_feed(3, self.process, exchange='direct.lang',routing_key='lang')
+        self.tf = twitter_feed(self.process, exchange='direct.lang',routing_key='lang')
         self.tf.start_feed()
 
     def process(self, ch, method, properties, body):
@@ -26,13 +26,14 @@ class lang_stats:
         print chr(27) + "[2J"
         print(self.tweets_analyzed)
         print(len(self.lang_sample))
+        sample_complete = True
         for i in self.lang_sample.items():
             if len(i[1]) < 100:
                 sample_complete = False
                 print("%s: %d"%(i[0], len(i[1])))
                 trouble_languages += 1
-            if self.tweets_analyzed > 10000 and trouble_languages < 8:
-                sample_complete = True
+                sample_complete = False
+
         if sample_complete == True:
             print('done')
             c = codecs.open('lang_breakdown','w','utf-8')
