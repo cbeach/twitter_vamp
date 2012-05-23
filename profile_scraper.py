@@ -14,8 +14,9 @@ api = tweepy.API(auth)
 print "logged in as %s" % api.me().name
 
 
-cur = tweepy.Cursor(api.followers,id=tracked_user)
 redis_server = redis.Redis("localhost") 
+tracked_user = redis_server.lpop("followed_users")
+cur = tweepy.Cursor(api.followers,id=tracked_user)
 
 followers_collected = 0
 
@@ -28,21 +29,22 @@ user_list = set()
 
 while(True):
     
+
+    if tracked_user != None:
+        for user in cur.items():
+            user_list.add((user.screen_name, user.id))
+            followers_collected += 1
+            time.sleep(3600/query_rate) #3600=seconds in an hour
+            if followers_collected % 50000 == 0:
+                f = bz2.BZ2File("follower_lists/%s.json.bz2" % (tracked_user), 'w')
+                temp = [i for i in user_list]
+                json.dump(temp, f) 
+
     if len(redis_server.lrange("followed_users",0,-1) < 1):
         sleep(900)  #15 minutes in seconds 
         continue
-
-    tracked_user = redis_server.lpop("followed_users")
-    for user in cur.items():
-        user_list.add((user.screen_name, user.id))
-        followers_collected += 1
-        time.sleep(3600/query_rate) #3600=seconds in an hour
-        if followers_collected % 50000 == 0:
-            f = bz2.BZ2File("follower_lists/%s.json.bz2" % (tracked_user), 'w')
-            temp = [i for i in user_list]
-            json.dump(temp, f) 
-
         
+    tracked_user = redis_server.lpop("followed_users")
 
 
 
