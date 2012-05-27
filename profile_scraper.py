@@ -1,6 +1,6 @@
 import tweepy, time, config, json, redis, bz2
 
-query_rate = 150 #queries / hr
+query_rate = 145 #queries / hr
 
 consumer_key= config.consumer_key
 consumer_secret=config.consumer_secret
@@ -33,13 +33,14 @@ while(True):
     if tracked_user != None:
         for user in cur.items():
             user_list.add((user.screen_name, user.id))
+            print(user.screen_name)
             followers_collected += 1
-            time.sleep(3600/query_rate) #3600=seconds in an hour
-            if followers_collected % 50000 == 0:
+            if followers_collected % 500 == 0:
                 f = bz2.BZ2File("follower_lists/%s.json.bz2" % (tracked_user), 'w')
                 temp = [i for i in user_list]
                 json.dump(temp, f) 
-
+        if followers_collected % 100 == 0:
+            time.sleep(3600/query_rate) #3600=seconds in an hour
     if len(redis_server.lrange("followed_users",0,-1) < 1):
         sleep(900)  #15 minutes in seconds 
         continue
