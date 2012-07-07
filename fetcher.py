@@ -35,8 +35,16 @@ class Fetcher:
             self.channel.basic_publish(exchange=config.RAW_EXCHANGE, routing_key='raw', body=self.buff)
             self.buff = ''
         return None
-if __name__ == "__main__":
+def instantiate_stream():
     if len(sys.argv) > 1 and sys.argv[1] == "file":
         f = Fetcher("./raw/2012-03-05.json.bz2")
     else:
         f = Fetcher()
+
+if __name__ == "__main__":
+    while(True):
+        try:
+            instantiate_stream()
+        except:
+            print("Error Encountered")
+            time.sleep(30)  

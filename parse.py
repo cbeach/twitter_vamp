@@ -39,7 +39,6 @@ class parser:
         
         if u'user' in body:
             self.publish_user(body.get('id'), body.get('user'))        
-        
         if u'place' in body:
             self.publish_place(body.get('id'),body.get('place'))
         if u'delete' in body:
