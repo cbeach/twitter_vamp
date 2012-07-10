@@ -2,8 +2,6 @@ import pycurl, json, time, datetime, sys, commands, pickle, MySQLdb, config, pik
 from sets import Set
 
 
-
-
 class Fetcher:
     buff = ''
 
