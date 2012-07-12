@@ -14,7 +14,7 @@ class Archiver:
     tweet_count = 0
     archive = None
 
-    tweets_per_archive = 600000
+    tweets_per_archive = 1e6
 
     def __init__(self,archive_dir='', name = ''):
         
