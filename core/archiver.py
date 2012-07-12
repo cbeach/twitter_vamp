@@ -14,15 +14,16 @@ class Archiver:
     tweet_count = 0
     archive = None
 
-    tweets_per_archive = 100000
+    tweets_per_archive = 1e6
 
     def __init__(self,archive_dir='', name = ''):
         
-        self.tweet_source = rts.twitter_feed(self.archive_tweet, source_name = name, exchange='direct.raw', routing_key = 'raw',exchange_type = 'fanout')
+        self.tweet_source = rts.twitter_feed(self.archive_tweet, source_name = name, exchange=config.RAW_EXCHANGE, routing_key = 'raw',exchange_type = 'fanout')
 
         self.archive_dir = archive_dir
         self.new_archive() 
         self.tweet_source.start_feed()
+
     def __del__(self):
         self.archive.close()
 
