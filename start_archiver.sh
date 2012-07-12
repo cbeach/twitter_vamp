@@ -1,4 +1,4 @@
 #!/bin/bash
 
-python fetcher.py &
-python archiver.py raw &
+python core/fetcher.py &
+python core/archiver.py raw &
