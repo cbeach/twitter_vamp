@@ -1,0 +1,8 @@
+com.*
+java.*
+net.*
+sun.*
+javax.*
+org.*
+*.class
+*.xml

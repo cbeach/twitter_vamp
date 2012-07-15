@@ -16,7 +16,7 @@ print "logged in"
 
 while(True):
     archiver_sp = subprocess.Popen(['python', 'core/archiver.py', 'data/raw'])
-    language = subprocess.Popen()
+#    parser_sp = subprocess.Popen(['python', 'core/parse.py'])
     try:
         watcher = StreamListener()
         streamer = tweepy.Stream(auth=auth, listener=watcher)
@@ -24,4 +24,3 @@ while(True):
     except Exception as e:
         print("Error Encountered: %s" % e)
         time.sleep(30)  
-

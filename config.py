@@ -4,6 +4,7 @@ PASS = "Omicron2"
 
 RABBITMQ_HOST = 'localhost'
 RAW_EXCHANGE = 'direct.raw'
+REDIS_SERVER='localhost'
 
 
 #twitter oauth keys

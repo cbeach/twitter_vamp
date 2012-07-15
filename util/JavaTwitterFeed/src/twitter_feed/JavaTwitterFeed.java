@@ -23,7 +23,7 @@ class tester implements Subscriber {
 }
 
 
-public class TwitterFeed {
+public class JavaTwitterFeed {
     
     ConnectionFactory factory;
     Connection connection;
@@ -32,29 +32,29 @@ public class TwitterFeed {
     
     public static void main(String[] args) {
         System.out.println("starting feed");
-        TwitterFeed tf = new TwitterFeed("localhost", "direct.raw");
+        JavaTwitterFeed tf = new JavaTwitterFeed("localhost", "direct.raw");
         try {
             tf.start_feed(new tester());
         } catch (Exception ex) {
-            Logger.getLogger(TwitterFeed.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(JavaTwitterFeed.class.getName()).log(Level.SEVERE, null, ex);
         }
         
     }
     
-    public TwitterFeed(String host, String exchange_name) {
+    public JavaTwitterFeed(String host, String exchange_name) {
         try {
             this.factory = new ConnectionFactory();
             this.factory.setHost(host);
             this.connection = factory.newConnection();
             this.channel = connection.createChannel();
 
-            this.channel.exchangeDeclare(exchange_name, "fanout");
+            this.channel.exchangeDeclare(exchange_name, "direct");
             this.channel.exchangeDeclare("direct.lang", "direct");
             String queueName = this.channel.queueDeclare().getQueue();
-            this.channel.queueBind(queueName, exchange_name, "raw");
+            this.channel.queueBind(queueName, exchange_name, "lang_in");
 
             this.consumer = new QueueingConsumer(channel);
-            this.channel.basicConsume(queueName, true, consumer);
+            this.channel.basicConsume(queueName, false, consumer);
         } catch (IOException ex) {
             System.out.println("exception in constructor");
             System.out.println(ex.getMessage());
@@ -62,11 +62,13 @@ public class TwitterFeed {
         
     }
     public void start_feed(Subscriber obj) throws Exception {
-
+        QueueingConsumer.Delivery delivery = null
         while(true) {
-            QueueingConsumer.Delivery delivery = this.consumer.nextDelivery();
+            delivery = this.consumer.nextDelivery();
             String message = new String(delivery.getBody());
             obj.receive(message);
+            this.channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
+
         }
     }    
     
@@ -74,7 +76,7 @@ public class TwitterFeed {
         try {
             this.channel.basicPublish("direct.lang","lang",null,message.toString().getBytes());
         } catch (IOException ex) {
-            Logger.getLogger(TwitterFeed.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(JavaTwitterFeed.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
