@@ -1,0 +1,8 @@
+debug DetectLanguage
+Generate Lexicon
+Cluster data using LDA
+Use Poison distribution to identify spiking in topic/locations
+Generate phrase graph
+Summerize regional news using local spiking and phrase graph
+Create list of users
+Create a global profile scraper
