@@ -1,4 +1,4 @@
-import bz2, time, json, sys, config
+import bz2, time, json, sys, config, os
 import twitter_subscriber as rts
 
 #
@@ -33,7 +33,7 @@ class Archiver:
         """
         if self.archive != None:
             self.archive.close()
-        name = self.archive_dir + time.strftime('/%Y-%m-%d-%H-%M') + '.json.bz2'
+        name = os.path.join(self.archive_dir, time.strftime('%Y-%m-%d-%H-%M') + '.json.bz2')
         self.archive = bz2.BZ2File(name, 'w')
         print("Creating new archive: " + name)
 
