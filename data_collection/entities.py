@@ -1,15 +1,24 @@
 import raw_twitter_subscriber as rts
+"""
+The entities class generates a list of entities from a given stream.
+It also handles loading and querying of the associated data.
+"""
 
-class entities:
-    def __init__(self, source_type, source_name):
-        self.feed = rts(source_type, source_name) 
+
+
+class Entities:
+    def __init__(self, stream=None, mode='generate'):
+		
+		if stream is None and mode == 'generate':
+			self.feed = rts(source_type, source_name) 
+		else:
+			self.feed = stream
 
 
     def generate_umtu(source,n,file_obj=None,starvation=.00000025):
         """
         Generate all of the usernames that have been seen, all of the people that they mention,
-        the hashtags that have been used and the urls that have been mentiond
-
+        the hashtags that have been used and the urls that have been mentioned
         """
 
         loop = True
