@@ -44,7 +44,7 @@ public class DetectLang implements Subscriber {
     
     public static void main(String[] args) {
         System.out.println("starting detector feed");
-        JavaTwitterFeed tf = new JavaTwitterFeed("localhost", "lang_in");
+        JavaTwitterFeed tf = new JavaTwitterFeed("localhost", "lang");
         try {
             tf.start_feed(new DetectLang(tf));
         } catch (Exception ex) {
@@ -57,40 +57,38 @@ public class DetectLang implements Subscriber {
         try {
             this.detect = DetectorFactory.create();
         } catch (LangDetectException ex) {
-            Logger.getLogger(DetectLang.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        
-        JSONObject message_object = (JSONObject) JSONSerializer.toJSON(message);
-        
-        if(message_object.has("text") == true) {
-        
-            this.detect.append(message_object.getString("text"));
-            String lang;
             
-            try {
-                lang = detect.detect();
-//                System.out.println(lang);
-                JSONObject json = new JSONObject();
-//                json.put("id",message_object.getString("id"));
-//                json.put("text", message_object.getString("text"));
-//                json.put("lang",lang);
-//                this.feed.send(json);
-                message_object.put("lang",lang);
-                this.feed.send(message_object);
-            } catch (LangDetectException ex) {
-                Logger.getLogger(DetectLang.class.getName()).log(Level.SEVERE, null, ex);
-            }
         }
-        this.tweets_recieved += 1;
-        if(this.tweets_recieved == 25000) {
-            this.tweets_recieved = 0;
-            System.out.println("creating new tf");
-            this.feed = new JavaTwitterFeed("localhost", "lang_in");
-            try {
-                this.feed.start_feed(this);
-            } catch (Exception ex) {
-               Logger.getLogger(JavaTwitterFeed.class.getName()).log(Level.SEVERE, null, ex);
+        try {
+            JSONObject message_object = (JSONObject) JSONSerializer.toJSON(message);
+
+            if(message_object.has("text") == true) {
+
+                this.detect.append(message_object.getString("text"));
+                String lang;
+
+                try {
+                    lang = detect.detect();
+    //                System.out.println(lang);
+                    JSONObject json = new JSONObject();
+                    
+    //                json.put("id",message_object.getString("id"));
+    //                json.put("text", message_object.getString("text"));
+    //                json.put("lang",lang);
+    //                this.feed.send(json);
+                    message_object.put("lang",lang);
+                    
+                } catch (LangDetectException ex) {}
+                while(true) {
+                    try {
+                        this.feed.send(message_object);
+                        return;
+                    } catch (redis.clients.jedis.exceptions.JedisConnectionException e) { 
+                        continue;
+                    }
+                    catch (InterruptedException ex) {}
+                }
             }
-        }
+        } catch(net.sf.json.JSONException e) {}
     }
 }
