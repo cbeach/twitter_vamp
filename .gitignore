@@ -1,5 +1,10 @@
+all-profiles-by-handle
+follower_lists
+lexicons
+util/commons-pool-1.6/apidocs
 lang_sample
 lang_breakdown
+*.zip
 *.swp
 *.pyc
 *.swo
