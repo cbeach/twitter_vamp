@@ -6,14 +6,16 @@ class raw_feed:
 
 class twitter_feed:
     count = 0
-    def __init__(self, callback, source_name='', host_name='localhost', exchange='', routing_key='',exchange_type='direct'):
+    def __init__(self, callback, source_name='', 
+                 host_name='localhost', exchange='', 
+                 routing_key='',exchange_type='direct'):
         self.callback = callback
         self.exchange = exchange
         self.routing_key = routing_key
 
         self.connection = pika.BlockingConnection(pika.ConnectionParameters(host_name))
         self.channel = self.connection.channel()
-        self.channel.exchange_declare(exchange=self.exchange, type = exchange_type)
+        self.channel.exchange_declare(exchange=self.exchange, type=exchange_type)
         self.queue = self.channel.queue_declare(exclusive=True)
         self.channel.queue_bind(exchange=self.exchange, queue=self.queue.method.queue, routing_key=routing_key)
         self.channel.basic_consume(self.get_tweet,self.queue.method.queue)
@@ -43,9 +45,9 @@ class twitter_feed:
         self.channel.start_consuming()
 
 
-def print_tweet(body):
-    print(type(body))
+def print_tweet(ch, method, properties, body):
+    print(body)
 
 if __name__ == "__main__":
-    r = twitter_feed(3,None,print_tweet)
+    r = twitter_feed(print_tweet, exchange='lang_in', routing_key='lang')
     r.start_feed()

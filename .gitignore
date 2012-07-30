@@ -27,3 +27,7 @@ testing.py
 config.py
 is_copying.py
 temese_format.py
+test.py
+*.class
+*.log
+*.html

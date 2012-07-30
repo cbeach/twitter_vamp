@@ -1,5 +1,5 @@
+import pika, pickle, json, redis, config
 import twitter_subscriber as rts
-import pika, pickle, json
 
 class parser:
     def __init__(self, source_name=None, publish_host='localhost'):
@@ -8,6 +8,7 @@ class parser:
         Then create the Twitter feed for getting the raw tweets from
         the API
         """
+        self.redis_server = redis.Redis(config.REDIS_SERVER)
         self.connection = pika.BlockingConnection(pika.ConnectionParameters(host=publish_host))
         self.channel = self.connection.channel()
 
@@ -25,57 +26,53 @@ class parser:
         self.tweet_source.start_feed()
 
     def parse_tweet(self, ch, message, properties, body):
-
+        subscribed = self.redis_server.get('active_feeds') 
+        for sub in subscribed:
+            func = getattr(self, sub)
+            func(body)
+    
+    def text(self,tweet):
         if u'text' in body:
-            self.publish_text(body.get('id'),body.get('text'))
-
+            message = {'id':tweet.get(id), 'text':tweet.get(text)}
+            self.channel.basic_publish(exchange='direct.text', routing_key='parse.text', body=json.dumps(message))
+        
+    def mentions(self,tweet):
         if u'entities' in body:
             if u'user_mentions' in body.get('entities'):
-                self.publish_mentions(body.get('id'),body.get('entities').get('user_mentions'))
+                message = {'id':tweet.get(id), 'mentions':tweet.get(mentions)}
+                self.channel.basic_publish(exchange='direct.mentions', routing_key='parse.mentions', body=json.dumps(message))
+        
+    def hashtags(self, tweet):
+        if u'entities' in body:
             if u'hashtags' in body.get('entities'):
-                self.publish_hashtags(body.get('id'),body.get('entities').get('hashtags'))
+                message = {'id':tweet.get(id), 'hashtags':tweet.get(hashtags)}
+                self.channel.basic_publish(exchange='direct.hashtags', routing_key='parse.hashtags', body=json.dumps(message))
+        
+    def urls(self, tweet):
+        if u'entities' in body:
             if u'urls' in body.get('entities'):
-                self.publish_urls(body.get('id'),body.get('entities').get('urls'))
+                message = {'id':tweet.get(id), 'urls':tweet.get(urls)}
+                self.channel.basic_publish(exchange='direct.urls', routing_key='parse.urls', body=json.dumps(message))
         
+    def user(self, tweet):
         if u'user' in body:
-            self.publish_user(body.get('id'), body.get('user'))        
+            message = {'id':tweet.get(id), 'user':tweet.get(user)}
+            self.channel.basic_publish(exchange='direct.user', routing_key='parse.user', body=json.dumps(message))
+        
+    def place(self, tweet):
         if u'place' in body:
-            self.publish_place(body.get('id'),body.get('place'))
+            message = {'id':tweet.get(id), 'place':tweet.get(place)}
+            self.channel.basic_publish(exchange='direct.place', routing_key='parse.place', body=json.dumps(message))
+        
+    def delete(self, tweet):
         if u'delete' in body:
-            self.publish_delete(body)
-        if u'user' in body and u'entities' in body:
-            self.publish_social_info(body.get('id'), body.get('user'), body.get('entities'))
-        #implement delete
-    
-    def publish_text(self,id,text):
-        message = {'id':id, 'text':text}
-        self.channel.basic_publish(exchange='direct.text', routing_key='parse.text', body=json.dumps(message))
-        
-    def publish_mentions(self,id, mentions):
-        message = {'id':id, 'mentions':mentions}
-        self.channel.basic_publish(exchange='direct.mentions', routing_key='parse.mentions', body=json.dumps(message))
-        
-    def publish_hashtags(self,id, hashtags):
-        message = {'id':id, 'hashtags':hashtags}
-        self.channel.basic_publish(exchange='direct.hashtags', routing_key='parse.hashtags', body=json.dumps(message))
-        
-    def publish_urls(self,id, urls):
-        message = {'id':id, 'urls':urls}
-        self.channel.basic_publish(exchange='direct.urls', routing_key='parse.urls', body=json.dumps(message))
-        
-    def publish_user(self,id,user):
-        message = {'id':id, 'user':user}
-        self.channel.basic_publish(exchange='direct.user', routing_key='parse.user', body=json.dumps(message))
-        
-    def publish_place(self,id,place):
-        message = {'id':id, 'place':place}
-        self.channel.basic_publish(exchange='direct.place', routing_key='parse.place', body=json.dumps(message))
-        
-    def publish_delete(self,delete):
-        self.channel.basic_publish(exchange='direct.delete', routing_key='parse.delete', body=json.dumps(delete))
+            self.channel.basic_publish(exchange='direct.delete', routing_key='parse.delete', body=json.dumps(delete))
 
-    def publish_social_info(self, id, user, entities):
-        message = {'id':id, 'user':user, 'entities':entities,}
-        self.channel.basic_publish(exchange='direct.uhmr', routing_key='parse.uhmr', body=json.dumps(message))
+    def social_info(self, tweet):
+
+        if u'user' in body and u'entities' in body:
+            message = {'id':tweet.get(id), 'user':tweet.get(user), 'entities':tweet.get(entities),}
+            self.channel.basic_publish(exchange='direct.uhmr', routing_key='parse.uhmr', body=json.dumps(message))
+
 if __name__ == "__main__":
     p = parser()

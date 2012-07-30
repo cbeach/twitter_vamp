@@ -1,16 +1,31 @@
+#---------------------------------------------------Development----------------------------------------------------#
 ◦ ̶D̶e̶b̶u̶g̶ ̶D̶e̶t̶e̶c̶t̶L̶a̶n̶g̶u̶a̶g̶e̶
 ◦ Generate Lexicon
 ◦ Cluster data using LDA
 ◦ Use Poison distribution to identify spiking in topic/locations
 ◦ Generate phrase graph
-◦ Summerize regional news using local spiking and phrase graph
+◦ Summarize regional news using local spiking and phrase graph
 ◦ Create list of users
 ◦ Create a global profile scraper
 
 
-#---------------Refactor/Reorganization----------------#
+#---------------------------------------------Refactor/Reorganization----------------------------------------------#
+◦ Pika/RabbitMQ has been thrashing my swap partition. I am going to start switching everything over to Redis.
+	◦ Each process will be in charge of monitoring it's own output rate.
+		◦ Manage.py will be in charge of monitoring global performance.
+			◦ Monitors process statuses via Redis.
+			◦ Spawn processes to clear backlogs.
+			◦ Kill processes when they are not longer needed. 
+			◦ Serve commands to processes
+			
+		◦ Each process will get its own Redis key for receiving messages from the management script.
+		◦ Each process will get its own Redis key (pid?) to use to post its status
+			◦ Full: Process is serving data as quickly as possible.
+			◦ Throttled: process is limiting speed for down stream processes.
+			◦ Clearing Queue: Pracess has completely stopped while downstream processes catchup. 
+
 ◦ Classes for gathering specific types of data will also server that data when initialized in the appropriate mode.
-	modes
+	Modes
 		◦ 'read':   Read the data from the appropriate archive
 		◦ 'write':  Generate data list from a given stream
 		

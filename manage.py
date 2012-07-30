@@ -3,10 +3,10 @@ import subprocess
 from core.fetcher import * 
 from core.archiver import * 
 
-consumer_key= config.consumer_key
-consumer_secret=config.consumer_secret
-access_token=config.access_token
-access_token_secret=config.access_token_secret
+consumer_key = config.consumer_key
+consumer_secret = config.consumer_secret
+access_token = config.access_token
+access_token_secret = config.access_token_secret
 
 auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
 auth.set_access_token(access_token, access_token_secret)
@@ -16,7 +16,7 @@ print "logged in"
 
 while(True):
     archiver_sp = subprocess.Popen(['python', 'core/archiver.py', 'data/raw'])
-    language = subprocess.Popen()
+#    parser_sp = subprocess.Popen(['python', 'core/parse.py'])
     try:
         watcher = StreamListener()
         streamer = tweepy.Stream(auth=auth, listener=watcher)
@@ -24,4 +24,3 @@ while(True):
     except Exception as e:
         print("Error Encountered: %s" % e)
         time.sleep(30)  
-
